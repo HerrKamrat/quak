@@ -1,17 +1,38 @@
 package com.gabrielsulka.quak
 
-import android.support.v7.app.AppCompatActivity
+import android.content.Context
+import android.content.res.AssetManager
 import android.os.Bundle
-import kotlinx.android.synthetic.main.activity_main.*
+import android.util.Log
+import org.libsdl.app.SDLActivity
+import java.io.File
+import java.io.FileWriter
 
-class MainActivity : AppCompatActivity() {
+
+class MainActivity : SDLActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setNativeAssetManger(getAssets())
+    }
 
-    // Example of a call to a native method
-    sample_text.text = stringFromJNI()
+    override fun onDestroy() {
+        setNativeAssetManger(null)
+        super.onDestroy()
+    }
+
+    external fun setNativeAssetManger(assets: AssetManager?);
+
+    override fun getLibraries(): Array<String> {
+        return arrayOf(
+            "SDL2",
+            // "SDL2_image",
+            // "SDL2_mixer",
+            // "SDL2_net",
+            // "SDL2_ttf",
+            // "main"
+            "quak"
+        )
     }
 
     /**
@@ -19,12 +40,4 @@ class MainActivity : AppCompatActivity() {
      * which is packaged with this application.
      */
     external fun stringFromJNI(): String
-
-    companion object {
-
-        // Used to load the 'native-lib' library on application startup.
-        init {
-            System.loadLibrary("quak")
-        }
-    }
 }

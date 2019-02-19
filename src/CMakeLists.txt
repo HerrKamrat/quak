@@ -1,10 +1,16 @@
-# For more information about using CMake with Android Studio, read the
-# documentation: https://d.android.com/studio/projects/add-native-code.html
+cmake_minimum_required(VERSION 3.10)
 
-# Sets the minimum version of CMake required to build the native library.
+set(CMAKE_CXX_STANDARD 17)
 
-cmake_minimum_required(VERSION 3.4.1)
 project(quak)
+
+# 3rd party libraries
+add_subdirectory(3rd_party/catch)
+add_subdirectory(3rd_party/duktape)
+add_subdirectory(3rd_party/fmt)
+add_subdirectory(3rd_party/physfs)
+add_subdirectory(3rd_party/stb)
+add_subdirectory(3rd_party/sdl)
 
 add_subdirectory(lib)
 
@@ -14,29 +20,25 @@ set(build-executable TRUE)
 
 if(ANDROID)
     set(build-executable FALSE)
-    find_library( # Sets the name of the path variable.
-            log-lib
-
-              # Specifies the name of the NDK library that
-              # you want CMake to locate.
-              log )
-        string(APPEND platform-libraries ${log-lib})
+    find_library(log-lib log)
+    find_library(android-lib android)
+    set(platform-libraries "${log-lib} ${android-lib} ${SDL2_LIBRARY}")
+elseif(WIN32)
+    string(APPEND platform-libraries ${SDL2_LIBRARY})
 endif()
 
 if(${build-executable})
     add_executable(${PROJECT_NAME} main.cpp)
 else()
-    add_library(${PROJECT_NAME} SHARED native-lib.cpp )
+    #TODO move android-extras.*pp to platform-src?
+    add_library(${PROJECT_NAME} SHARED
+            main.cpp
+            android-extras.cpp
+            android-extras.hpp )
 endif()
 
-
-
-
-target_link_libraries( # Specifies the target library.
-                       ${PROJECT_NAME}
-
-                       # Links the target library to the log library
-                       # included in the NDK.
-                       ${platform-libraries}
+#TODO move ${log-lib} ${android-lib} ${SDL2_LIBRARY} to platform-libraries
+target_link_libraries(${PROJECT_NAME}
+        ${log-lib} ${android-lib} ${SDL2_LIBRARY}
         lib::lib
-        )
+)
