@@ -105,11 +105,9 @@ duk_ret_t module_callback(duk_context* ctx) {
         return duk_throw(ctx);
     }
 
-    auto xyz = duk_get_top(ctx);
+    auto top = duk_get_top(ctx);
     //debug("module_callback, index: {}, nargs: {}, xyz: {}", index, nargs, xyz);
-
-
-    return xyz - nargs;
+    return top - nargs;
 }
 
 duk_context* toContext(void* ptr) {
@@ -123,7 +121,7 @@ Context* fromContext(duk_context* ctx) {
     return thiz;
 }
 
-void Context::registerModule(const Module& module) {
+void Context::registerModule(const Module& module, void* obj) {
     auto ctx = toContext(m_ctx.get());
 
     //debug("register module: '{}'", module.key);
@@ -137,7 +135,7 @@ void Context::registerModule(const Module& module) {
         duk_set_magic(ctx, -1, fncs.size());
         duk_put_prop_string(ctx, -2, entry.key);
 
-        fncs.push_back({module.object, entry.func, entry.nargs});
+        fncs.push_back({obj, entry.func, entry.nargs});
     }
 
     duk_put_global_string(ctx, module.key);
@@ -208,10 +206,7 @@ bool CallArgs::hasReturnValue() {
     return m_rval;
 }
 
-
-
 /** VALUE CONVERTIONS */
-
 template<>
 std::string_view string_value_converter::get(void* context, index_t idx) {
     auto ctx = as_duk_context(context);
@@ -275,4 +270,46 @@ void boolean_value_converter::put(void* context, const bool& value) {
     auto ctx = as_duk_context(context);
     duk_push_boolean(ctx, value);
     //debug("put bool {}", value);
+};
+
+
+
+template <>
+Uint32DataView uint32_array_view_value_converter::get(void* context, index_t idx) {
+    auto ctx = as_duk_context(context);
+	duk_size_t len;
+    uint32_t* ptr =
+        reinterpret_cast<uint32_t*>(duk_get_buffer_data(ctx, idx, &len));
+        len = len / sizeof(uint32_t);
+    Uint32DataView value(ptr, len);
+    // debug("get std::string_view {} => {}", idx, value);
+    return value;
+};
+
+template <>
+void uint32_array_view_value_converter::put(void* context, const Uint32DataView& value){
+    //auto ctx = as_duk_context(context);
+    //duk_push_boolean(ctx, value);
+    // debug("put bool {}", value);
+};
+
+template <>
+Uint8DataView uint8_array_view_value_converter::get(void* context, index_t idx) {
+    using value_type = Uint8DataView::value_type;
+    using pointer = Uint8DataView::pointer;
+    
+	auto ctx = as_duk_context(context);
+    duk_size_t len;
+        pointer ptr = reinterpret_cast<pointer>(duk_get_buffer_data(ctx, idx, &len));
+    len = len / Uint8DataView::byte_size;
+    Uint8DataView value(ptr, len);
+    // debug("get std::string_view {} => {}", idx, value);
+    return value;
+};
+
+template <>
+void uint8_array_view_value_converter::put(void* context, const Uint8DataView& value){
+    // auto ctx = as_duk_context(context);
+    // duk_push_boolean(ctx, value);
+    // debug("put bool {}", value);
 };

@@ -1,23 +1,8 @@
-#include "buffer.hpp"
-
-void default_deleter(Buffer::pointer data) { delete[] data; }
-
+#include "data_view.hpp"
+#ifdef USE_DATA_VIEW_CPP
 // Constructors
 
-Buffer::Buffer(size_type size) : Buffer(size, size){};
-
-Buffer::Buffer(size_type size, size_type capacity)
-    : Buffer(unique_ptr(allocate(size), default_deleter), size, capacity){};
-
 Buffer::Buffer(const_pointer data, size_type size) : Buffer(data, size, size){};
-
-Buffer::Buffer(const_pointer data, size_type size, size_type capacity) : Buffer() {
-    reset(data, size, capacity);
-};
-
-Buffer::Buffer(unique_ptr data, size_type size, size_type capacity) : Buffer() {
-    reset(std::move(data), size, capacity);
-};
 
 Buffer::Buffer(Buffer&& other) {
     *this = std::move(other);
@@ -194,3 +179,5 @@ void Buffer::reset(unique_ptr new_data, size_type new_size, size_type new_capaci
     m_size = new_size;
     m_capacity = new_capacity;
 };
+
+#endif

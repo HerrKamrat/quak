@@ -254,9 +254,8 @@ Java_com_gabrielsulka_quak_MainActivity_setNativeAssetManger(JNIEnv* env,
     // PHYSFS_Io io = {0};
     // PHYSFS_mountIo()
 
-    PHYSFS_init(nullptr);
-    aaa_PHYSFS_mountAndroidAssets("/assets", true);
-    auto io = aaa_ar_openRead(nullptr, "/assets/compressed.zip");
+    //PHYSFS_init(nullptr);
+    /*auto io = aaa_ar_openRead(nullptr, "/assets/compressed.zip");
     int i = PHYSFS_mountIo(io, "/assets/compressed.zip", "/z", 1);
 
     //auto file = PHYSFS_openRead("/assets/raw/R0.txt");
@@ -268,6 +267,6 @@ Java_com_gabrielsulka_quak_MainActivity_setNativeAssetManger(JNIEnv* env,
     char* content = new char[len + 1];
     PHYSFS_readBytes(file, content, len);
     content[len] = 0;
-    info("Java_com_gabrielsulka_quak_MainActivity_setNativeAssetManger READ: <{}>", content);
+    info("Java_com_gabrielsulka_quak_MainActivity_setNativeAssetManger READ: <{}>", content);*/
 
 }

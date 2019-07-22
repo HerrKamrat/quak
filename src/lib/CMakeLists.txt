@@ -5,22 +5,35 @@ add_library(${PROJECT_NAME}
 src/buffer.cpp
 src/buffer.hpp
 
+src/cmd.cpp
+src/cmd.hpp
+
+src/color.cpp
+src/color.hpp
+
+src/data_view.cpp
+src/data_view.hpp
+
+src/event.cpp
+src/event.hpp
+
+src/gfx.cpp
+src/gfx.hpp
+
 src/file.cpp
 src/file.hpp
 
-src/log.cpp
-src/log.hpp
+src/image.hpp
+src/image.cpp
 
 src/lib.cpp
 src/lib.hpp
 
+src/log.cpp
+src/log.hpp
+
 src/platform.cpp
 src/platform.hpp
-
-src/gfx.cpp
-src/gfx.hpp
-src/color.cpp
-src/color.hpp
 
 src/vm.cpp
 src/vm.hpp

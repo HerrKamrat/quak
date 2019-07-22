@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "buffer.hpp"
+#include "data_view.hpp"
 
 namespace Scripting {
 
@@ -26,6 +27,11 @@ class script_error : public std::runtime_error {
     using int_value_converter = value_converter<int>;
     using number_value_converter = value_converter<double>;
     using boolean_value_converter = value_converter<bool>;
+
+	
+	using uint8_array_view_value_converter = value_converter<Uint8DataView>;
+    using uint32_array_view_value_converter = value_converter<Uint32DataView>;
+
 
     template <class T>
     struct make_convertable {
@@ -73,7 +79,6 @@ struct ModuleFunctionEntry {
 
 struct Module {
     const char* key;
-    void* object;
     std::vector<ModuleFunctionEntry> value;
 };
 
@@ -83,7 +88,7 @@ class Context {
 
     Context();
 
-    void registerModule(const Module&);
+    void registerModule(const Module&, void* obj = nullptr);
     error_code eval(const std::string_view& src, const std::string_view& name = {});
     error_code evalModule(const std::string_view& srcPath);
     std::unique_ptr<void, void (*)(void*)> m_ctx;

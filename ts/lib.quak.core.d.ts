@@ -40,13 +40,13 @@ interface Sys {
 /** _sys */
 declare const __sys: Sys;
 
-interface Console {
-    log(...args:any[]):void;
+interface Gfx {
+
 }
 
+declare const __gfx: Gfx;
+
 interface Global {
-    console:Console;
 }
 
 declare const global: Global;
-declare const console: Console;

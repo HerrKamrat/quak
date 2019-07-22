@@ -11,34 +11,61 @@ add_subdirectory(3rd_party/fmt)
 add_subdirectory(3rd_party/physfs)
 add_subdirectory(3rd_party/stb)
 add_subdirectory(3rd_party/sdl)
+add_subdirectory(3rd_party/remotery)
 
 add_subdirectory(lib)
 
-set(platform-libraries "")
+set(platform-src)
+set(platform-lib)
 
 set(build-executable TRUE)
+set(build-tests FALSE)
 
 if(ANDROID)
+    set(platform-src 
+        android-extras.cpp
+        android-extras.hpp )
+
     set(build-executable FALSE)
     find_library(log-lib log)
     find_library(android-lib android)
-    set(platform-libraries "${log-lib} ${android-lib} ${SDL2_LIBRARY}")
+
+    set(platform-lib 
+        ${log-lib} 
+        ${android-lib} 
+        ${SDL2_LIBRARY} )
+    
+
 elseif(WIN32)
-    string(APPEND platform-libraries ${SDL2_LIBRARY})
+    set(platform-lib 
+        ${SDL2_LIBRARY} )
 endif()
 
 if(${build-executable})
-    add_executable(${PROJECT_NAME} main.cpp)
+	set(build-tests TRUE)
+    add_executable(${PROJECT_NAME} 
+        main.cpp
+        ${platform-src} )
 else()
-    #TODO move android-extras.*pp to platform-src?
     add_library(${PROJECT_NAME} SHARED
             main.cpp
-            android-extras.cpp
-            android-extras.hpp )
+            ${platform-src} )
 endif()
 
-#TODO move ${log-lib} ${android-lib} ${SDL2_LIBRARY} to platform-libraries
 target_link_libraries(${PROJECT_NAME}
-        ${log-lib} ${android-lib} ${SDL2_LIBRARY}
-        lib::lib
-)
+    ${platform-lib}
+    lib::lib )
+
+if(${build-tests})
+	#project(qtest)
+	add_executable(test 
+	tests/main.cpp
+	tests/buffers.cpp)
+	
+	target_link_libraries(test
+		${platform-lib}
+		lib::lib
+		catch
+		remotery)
+
+endif()
