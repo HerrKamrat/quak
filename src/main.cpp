@@ -74,17 +74,26 @@ void sys_test(Scripting::CallArgs& args) {
     const_cast<uint32_t*>(s.data())[0] = 123;
 };
 
+
+template<class T1, class T2>
+constexpr DataView<T1> view_cast(DataView<T2> t) {
+    auto ptr = reinterpret_cast<T1*>(t.data());
+    auto len = (t.size() * t.byte_size) / DataView<T1>::byte_size;
+    
+	return {ptr, len};
+} 
+
 /** GFX / WINDOW */
 void gfx_poll(Scripting::CallArgs& args) {
     auto gfx = reinterpret_cast<Window*>(args.callee());
+
     Uint8DataView data{};
-    int len;
+    bool wait;
     args.arg(0, data);
-    args.arg(1, len);
+    args.arg(1, wait);
+    auto e = view_cast<Event>(data);
 
-    auto e = reinterpret_cast<Event*>(data.data());
-
-    auto res = gfx->poll(e, len);
+    auto res = gfx->poll(e, wait);
     args.rval(res);
     // Scripting::uint32_array_view s;
     // args.arg(0, s);
@@ -94,18 +103,23 @@ void gfx_poll(Scripting::CallArgs& args) {
 
 void gfx_commit(Scripting::CallArgs& args) {
     auto gfx = reinterpret_cast<Window*>(args.callee());
+
     Uint8DataView data{};
-    int len;
+
+	bool present;
     args.arg(0, data);
-    args.arg(1, len);
+    args.arg(1, present);
 
-    auto e = reinterpret_cast<Window::DrawCommand*>(data.data());
+    //auto c = reinterpret_cast<Window::DrawCommand*>(data.data());
+    //auto s = (data.size() * data.byte_size) / sizeof(Window::DrawCommand);
 
-    gfx->commit(e, len);
-    // Scripting::uint32_array_view s;
-    // args.arg(0, s);
+	auto commands = view_cast<Window::DrawCommand>(data);
 
-    // const_cast<uint32_t*>(s.data())[0] = 123;
+	for (int i = 0; i < data.size(); ++i) {
+        info("[cpp] cmds {}", data[i]);
+    }
+
+	gfx->commit(commands, present);
 };
 
 const Scripting::Module module_sys = {"__sys", {{"print", sys_print, -1}, {"test", sys_test, -1}}};
@@ -115,22 +129,6 @@ const Scripting::Module module_fs = {
     {{"resolve", fs_resolve, 1}, {"read", fs_read, 1}, {"write", fs_write, 1}}};
 
 const Scripting::Module module_gfx = {"__gfx", {{"poll", gfx_poll, 2}, {"commit", gfx_commit, 2}}};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 int main(int argc, char* argv[]) {
     Scripting::CallArgs ca(nullptr, nullptr, 3);
@@ -221,23 +219,23 @@ int main(int argc, char* argv[]) {
         }
 #endif
 
-        // window.run(draw);
+        /*
         std::vector<Window::DrawCommand> cmds;
 
         auto drawRect = [&cmds](int x, int y, int w, int h) {
             Window::DrawCommand cmd;
-            cmd.drawRect = {Window::DrawCommandType::DrawRect, x, y, w, h};
+            cmd.drawRect = {Window::DrawCommandType::DrawRect, {}, x, y, w, h};
             cmds.push_back({cmd});
         };
 
         auto setColor = [&cmds](int c) {
             Window::DrawCommand cmd;
-            cmd.setColor = {Window::DrawCommandType::SetColor, c};
+            cmd.setColor = {Window::DrawCommandType::SetColor, {}, c};
             cmds.push_back({cmd});
         };
         auto setTexture = [&cmds](Texture t) {
             Window::DrawCommand cmd;
-            cmd.setTexture = {Window::DrawCommandType::SetTexture, t.key};
+            cmd.setTexture = {Window::DrawCommandType::SetTexture, {}, t.key};
             cmds.push_back({cmd});
         };
 
@@ -269,7 +267,8 @@ int main(int argc, char* argv[]) {
                     events[0].keyboard.key == SDLK_ESCAPE) {
                 break;
             }
-        }
+         }
+         */
 
 		Scripting::Context ctx;
         ctx.registerModule(module_sys);
@@ -286,14 +285,9 @@ int main(int argc, char* argv[]) {
             err = ctx.evalModule(file);
         }
         info("script '{}' has exited with the code {}", file, static_cast<int>(err));
-
-
-
-
-
-
     }
-    /**
+
+	/**
      */
     using namespace std::chrono_literals;
 

@@ -77,6 +77,8 @@ class Context {
         if (m_frameCounter % 2 == 0) {
             SDL_SetRenderDrawColor(m_renderer, 0xff, 0, 0, 0);
             SDL_RenderFillRects(m_renderer, rects, 4);
+            SDL_SetRenderDrawColor(m_renderer, m_currentColor.r, m_currentColor.g, m_currentColor.b,
+                                   m_currentColor.a);
         }
         SDL_RenderPresent(m_renderer);
 
@@ -312,6 +314,10 @@ Texture Window::createTexture(const Image& img) {
     return m_context->createTexture(img);
 };
 
+void Window::commit(DataView<DrawCommand> cmds, bool present) {
+    commit(cmds.data(), cmds.size(), present);
+};
+
 void Window::commit(const std::vector<DrawCommand>& cmds, bool present) {
     commit(cmds.data(), cmds.size(), present);
 }
@@ -320,11 +326,13 @@ void Window::commit(const DrawCommand* commands, int length, bool present){
     SDL_Rect rect;
     uint8_t r, g, b, a;
 
-    m_context->clear();
 
     for (int i = 0; i < length; i++) {
         const auto& cmd = commands[i];
         switch (cmd.type) {
+            case DrawCommandType::Clear:
+                m_context->clear();
+                break;
             case DrawCommandType::DrawRect:
                 m_context->drawRect(cmd.drawRect.x, cmd.drawRect.y, cmd.drawRect.w, cmd.drawRect.h);
                 continue;
@@ -343,7 +351,9 @@ void Window::commit(const DrawCommand* commands, int length, bool present){
          m_context->draw(rect, r, g, b, a);*/
     }
 
-    m_context->present();
+    if (present) {
+	    m_context->present();
+    }
 };
 
 int FLAG_EXIT = 1;
@@ -351,7 +361,7 @@ int FLAG_DIRTY = 2;
 int MAX = FLAG_EXIT | FLAG_DIRTY;
 
 
-int Window::poll(Event* events, size_t length) {
+int Window::poll(Event* events, size_t length, bool wait) {
     int ret = 0;
 
     //Event* out = reinterpret_cast<Event*>(events.data());
@@ -359,7 +369,10 @@ int Window::poll(Event* events, size_t length) {
 
     Event ev;
     SDL_Event e;
-    SDL_WaitEvent(nullptr);
+
+	if (wait) {
+	    SDL_WaitEvent(nullptr);
+    }
 
 	int i = 0;
     while (SDL_PollEvent(&e) != 0) {

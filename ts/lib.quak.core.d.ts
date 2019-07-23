@@ -41,7 +41,8 @@ interface Sys {
 declare const __sys: Sys;
 
 interface Gfx {
-
+    poll(outEvents:Uint8Array, wait:boolean):number;
+    commit(commands:Uint8Array, present:boolean):void;
 }
 
 declare const __gfx: Gfx;

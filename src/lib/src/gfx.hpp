@@ -56,15 +56,23 @@ class Window {
         }
     };
 
-    enum class DrawCommandType : uint8_t { DrawRect, SetColor, SetTexture };
-
-	struct Common {
-        DrawCommandType type;
+    enum class DrawCommandType : uint8_t { 
+		Noop = 0,
+		Clear,
+		DrawRect, 
+		SetColor, 
+		SetTexture 
 	};
+
+	struct CommonCommand {
+        DrawCommandType type;
+        uint8_t _[3 + 4 * 4];
+    };
 
     struct DrawRectCommand {
         DrawCommandType type;
-        // uint8_t pad;
+        uint8_t _[3];
+
         int32_t x;
         int32_t y;
         int32_t w;
@@ -73,29 +81,52 @@ class Window {
 
     struct SetColorCommand {
         DrawCommandType type;
-        int32_t color;
+        uint8_t _[3 + 4 * 3];
+
+		int32_t color;
     };
 
     struct SetTextureCommand {
         DrawCommandType type;
-        Id texture;
+        uint8_t _[3 + 4 * 3];
+
+		Id texture;
     };
 
     union DrawCommand {
         DrawCommandType type;
+        CommonCommand clear;
         DrawRectCommand drawRect;
         SetColorCommand setColor;
         SetTextureCommand setTexture;
+        uint8_t _[4 * 5];
     };
 
+	static_assert(sizeof(DrawCommand) == sizeof(int32_t) * 5);
 
+    static_assert(sizeof(DrawCommand) == sizeof(CommonCommand));
+        static_assert(sizeof(DrawCommand) == sizeof(DrawRectCommand));
+    static_assert(sizeof(DrawCommand) == sizeof(SetColorCommand));
+        static_assert(sizeof(DrawCommand) == sizeof(SetTextureCommand));
+
+	static_assert(offsetof(DrawRectCommand, type) == 0);
+    static_assert(offsetof(DrawRectCommand, x) == 4);
+    static_assert(offsetof(DrawRectCommand, y) == 8);
+
+
+		
 
     Window(const Settings& settings);
     ~Window();
 
     Texture createTexture(const Image& img);
 
-    int poll(Event* events, size_t length = 1);
+    int poll(DataView<Event> events, bool wait = true) {
+        return poll(events.data(), events.size(), wait);
+	};
+    int poll(Event* events, size_t length = 1, bool wait = true);
+
+    void commit(DataView<DrawCommand> commands, bool present = true);
     void commit(const std::vector<DrawCommand>& commands, bool present = true);
     void commit(const DrawCommand* commands, int length, bool present = true);
 
