@@ -176,7 +176,7 @@ class Context {
         m_textures.push_back(obj);
 
         Texture tex = {key, rect.w, rect.h};
-        info("Context::createTexture {}", key);
+        //info("Context::createTexture {}", key);
         return tex;
     }
 

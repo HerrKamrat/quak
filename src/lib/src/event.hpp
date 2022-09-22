@@ -98,7 +98,7 @@ inline MouseMotionEvent createMouseMotionEvent(int32_t x, int32_t y, int16_t dx,
         Type::MouseMotionEvent,
         MouseMotionEvent::Event::Motion,
         x,y,dx,dy,
-        {0}
+        {}
 	};
 
     return e;

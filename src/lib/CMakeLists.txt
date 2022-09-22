@@ -50,9 +50,11 @@ target_include_directories( ${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-	libsdl
-	PhysicsFS
-	duktape
-    fmt-header-only
-	stb-header-only
+	#libsdl
+	${core-libraries}
+
+	#PhysicsFS
+	#duktape
+    #fmt-header-only
+	#stb-header-only
 )

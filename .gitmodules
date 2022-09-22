@@ -1,0 +1,15 @@
+[submodule "3rd_party/SDL"]
+	path = 3rd_party/SDL
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "3rd_party/physfs"]
+	path = 3rd_party/physfs
+	url = https://github.com/icculus/physfs.git
+[submodule "3rd_party/stb"]
+	path = 3rd_party/stb
+	url = https://github.com/nothings/stb.git
+[submodule "3rd_party/fmt"]
+	path = 3rd_party/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "3rd_party/sdl-gpu"]
+	path = 3rd_party/sdl-gpu
+	url = https://github.com/grimfang4/sdl-gpu.git

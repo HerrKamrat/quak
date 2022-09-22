@@ -1,2 +1,5 @@
 /assets/js/
 /src/3rd_party/*/*/
+/build/
+/3rd_party/*/
+**/build/**
